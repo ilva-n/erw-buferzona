@@ -1,0 +1,16 @@
+{
+  "name": "olproject",
+  "version": "1.0.0",
+  "scripts": {
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview"
+  },
+  "devDependencies": {
+    "vite": "^6.0.9"
+  },
+  "dependencies": {
+    "firebase": "^11.2.0",
+    "ol": "latest"
+  }
+}

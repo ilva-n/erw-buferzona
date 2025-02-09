@@ -1,0 +1,105 @@
+@import "node_modules/ol/ol.css";
+
+/* html, body {
+  margin: 0;
+  height: 100%;
+}
+#map {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+} */
+body {
+  margin: 0;
+  display: flex;
+  height: 100vh;
+  font-family: Arial, sans-serif;
+}
+
+#map {
+  flex: 1; /* Main area for the map */
+}
+
+#side-panel {
+  width: 200px; /* Width of the side panel */
+  background-color: #f7f7f7;
+  border-left: 1px solid #ccc;
+  padding: 15px;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+}
+
+#side-panel h2 {
+  margin: 0 0 10px 0;
+  font-size: 18px;
+}
+
+#side-panel label {
+  display: block;
+  margin-bottom: 10px;
+  cursor: pointer;
+}
+
+/*
+input[type="checkbox"] {
+  margin-right: 8px;
+}
+
+label {
+  margin-bottom: 5px;
+  font-size: 14px;
+}
+
+input[type="text"] {
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: calc(100% - 20px);
+}
+*/
+.input-group {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.input-group label {
+  font-size: 14px;
+  width: 40px; /* Set label width */
+  margin-right: 5px;
+}
+
+.input-group input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  width: 150px; /* Shorter input boxes */
+}
+
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  margin-bottom: 10px
+}
+
+button:hover {
+  background-color: #0056b3;
+}
+
+.ol-popup {
+  position: absolute;
+  background: white;
+  padding: 5px;
+  border: 1px solid black;
+  border-radius: 5px;
+  font-size: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+}

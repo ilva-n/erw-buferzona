@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/x-icon" href="https://openlayers.org/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Using OpenLayers with Vite</title>
+  </head>
+  <body>
+    <div id="map"></div>
+    <div id="side-panel">
+      <label>
+        <input type="checkbox" id="novadi-checkbox">
+        Novadi
+      </label>
+      <label>
+        <input type="checkbox" id="mazciemi-checkbox">
+        Mazciemi
+      </label>
+      <label>
+        <input type="checkbox" id="ekas-checkbox">
+        Ēkas
+      </label>
+      <label>
+        <input type="checkbox" id="buferzonas-checkbox" checked>
+        Buferzonas
+      </label>
+      <label>
+        <input type="checkbox" id="apsekojumi-checkbox" checked>
+        Apsekojumi
+      </label>
+      <h2>Pievienot punktu</h2>
+      <div class="input-group">
+        <label for="longitude">Lon</label>
+        <input type="text" id="longitude" placeholder="piem. 24.9354">
+      </div>
+      <div class="input-group">
+        <label for="latitude">Lat</label>
+        <input type="text" id="latitude" placeholder="piem. 58.1695">
+      </div>
+      <div class="input-group">
+        <label for="year">Gads</label>
+        <input type="text" id="year" placeholder="2025">
+      </div>
+      <label>
+        <input type="checkbox" id="sampleCheckbox"> Paraugs
+      </label>
+      <div class="input-group" id="sampleInputContainer" style="visibility: hidden; opacity: 0; height: 0;">
+        <label for="sampleNumber">Nr.</label>
+        <input type="text" id="sampleNumber">      
+      </div>
+      <div id="pozitivsCheckbox" style="visibility: hidden; opacity: 0; height: 0;">
+        <label for="pozitivs"><input type="checkbox" id="pozitivs">Pozitīvs</label> 
+      </div>
+      <button id="add-point">Pievienot</button>
+      <button id="delete-btn" style="display: none;">❌ Nodzēst izvēlēto</button>
+      <h2>Izveidot buferzonu norādot centru</h2>
+      <div class="input-group">
+        <label for="centrs-lon">Lon</label>
+        <input type="text" id="centrs-lon" placeholder="piem. 24.9354">
+      </div>
+      <div class="input-group">
+        <label for="centrs-lat">Lat</label>
+        <input type="text" id="centrs-lat" placeholder="piem. 58.1695">
+      </div>
+      <label for="komentars">Apzīmējums</label>
+      <input type="text" id="komentars">
+      <br>
+      <button id="add-centre">Izveidot</button>
+      <div id="popup" class="ol-popup">
+        <span id="popup-content"></span>
+        <!---<button id="delete-btn" style="display: none;">❌ Delete</button>--->
+      </div>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
