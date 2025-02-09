@@ -20,7 +20,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, collection, addDoc, getDocs, setDoc, deleteDoc } from 'firebase/firestore/lite';
 import { novadiFillObj, novadiStrokeObj, largeFont } from './utils/consts.js'
 import { mazciemiFillObj, mazciemiStrokeObj, smallFont, pointFillObj0, pointFillObj2, pointStrokeObj, oldPointFill } from './utils/consts.js'
-import { ekasFillObj, ekasStrokeObj, circleFillObj, circleStrokeObj, centerFillObj, centerStrokeObj } from './utils/consts.js'
+import { circleFillObj, circleStrokeObj, centerFillObj, centerStrokeObj } from './utils/consts.js'
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -71,7 +71,6 @@ const map = new Map({
 // Kartes slāņi novadiem, adresēm.
 let novadiVectorLayer = null;
 let mazciemiVectorLayer = null;
-let ekasVectorLayer = null;
 
 // GeoJSON vector sources
 const novadiGeojsonSource = new VectorSource({
@@ -84,13 +83,6 @@ const mazciemiGeojsonSource = new VectorSource({
   url: './adreses/mazciemi.geojson', // Provide the URL to your GeoJSON
   format: new GeoJSON()
 })
-
-//ēkas
-const ekasGeojsonSource = new VectorSource({
-  url: './adreses/eekas.geojson', // Provide the URL to your GeoJSON
-  format: new GeoJSON()
-})
-
 
 // Stili novadu, ēku un mazciemu lāņiem
 const novadiGeojsonStyle = new Style({
@@ -124,37 +116,12 @@ const mazciemiLabeltVisibleStyle = new Style({
     text: ''
   })
 });
-
-//ēkas
-//redzami tikai punkti
-const ekasPointVisibleStyle = new Style({
-  image: new CircleStyle({
-    radius: 4,
-    fill: new Fill(ekasFillObj),
-    stroke: new Stroke(ekasStrokeObj)
-  })
-});
-//redzami punkti un "labels"
-const ekasLabeltVisibleStyle = new Style({
-  image: new CircleStyle({
-    radius: 4,
-    fill: new Fill(ekasFillObj),
-    stroke: new Stroke(ekasStrokeObj)
-  }),
-  text: new Text({
-    font: smallFont,
-    fill: new Fill({ color: 'black' }),
-    text: ''
-  })
-});
-  
   
 //Layer visibility
 const novadiCheckbox = document.getElementById('novadi-checkbox');
 const buferzonasCheckbox = document.getElementById('buferzonas-checkbox');
 const apsekojumiCheckbox = document.getElementById('apsekojumi-checkbox');
 const mazciemiCheckbox = document.getElementById('mazciemi-checkbox');
-const ekasCheckbox = document.getElementById('ekas-checkbox');
 
 // Toggle layer visibility checking checkbox
 novadiCheckbox.addEventListener('change', function(){
@@ -209,38 +176,6 @@ mazciemiCheckbox.addEventListener('change', function(){
     if (mazciemiVectorLayer){
       mazciemiVectorLayer.setVisible(false);
     }
-  }
-});
-
-ekasCheckbox.addEventListener('change', function(){
-  if (this.checked){
-    if (! ekasVectorLayer){
-      ekasVectorLayer = new VectorLayer({
-        source: ekasGeojsonSource,
-        style: function (feature, resolution) {
-          // Set zoom thresholds: adjust the resolution for your needs
-          const maxLabelResolution = 15; // Labels visible when zoomed in (lower resolution = closer zoom)
-          const maxPointResolution = 30; // Points visible until this resolution
-          
-          // Determine which style to apply based on resolution
-          if (resolution > maxPointResolution) {
-            // Too far out: no points or labels
-            return null;
-          } else if (resolution > maxLabelResolution) {
-            // Zoomed in enough for points, but not for labels
-            return ekasPointVisibleStyle;
-          } else {
-            // Zoomed in enough for both points and labels
-            ekasLabeltVisibleStyle.getText().setText(feature.get('NOSAUKUMS') || ''); // Replace 'name' with your GeoJSON's property 
-            return ekasLabeltVisibleStyle;
-          }
-        },
-      });
-      map.addLayer(ekasVectorLayer);
-    }
-    ekasVectorLayer.setVisible(true)
-  } else {
-    ekasVectorLayer.setVisible(false);
   }
 });
 
