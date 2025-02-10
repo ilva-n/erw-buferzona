@@ -74,13 +74,13 @@ let mazciemiVectorLayer = null;
 
 // GeoJSON vector sources
 const novadiGeojsonSource = new VectorSource({
-    url: './adreses/novadi.geojson', // Provide the URL to your GeoJSON
+    url: '/adreses/novadi.geojson', // Provide the URL to your GeoJSON
     format: new GeoJSON()
   }) 
   
 //mazciemi
 const mazciemiGeojsonSource = new VectorSource({
-  url: './adreses/mazciemi.geojson', // Provide the URL to your GeoJSON
+  url: '/adreses/mazciemi.geojson', // Provide the URL to your GeoJSON
   format: new GeoJSON()
 })
 
