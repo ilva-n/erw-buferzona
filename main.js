@@ -24,12 +24,12 @@ import { circleFillObj, circleStrokeObj, centerFillObj, centerStrokeObj } from '
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyAqhTo_oz1PhnQXMN6K78Avw5WasCVhLcg",
-  authDomain: "buferzonu-karte.firebaseapp.com",
-  projectId: "buferzonu-karte",
-  storageBucket: "buferzonu-karte.firebasestorage.app",
-  messagingSenderId: "945753765429",
-  appId: "1:945753765429:web:e14b341c1bc37bbd9ca37c"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
 // Initialize Firebase
