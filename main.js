@@ -583,3 +583,77 @@ deleteBtn.addEventListener("click", async function(event) {
     selectedFeature = null;
   }
 });
+
+  // Function to Fetch Data from Apsekojumi & Download CSV
+async function downloadCSV() {
+  const snapshot = await getDocs(collection(db, "Apsekojumi"));
+  const data = [];
+
+  // Process Each Document
+  snapshot.forEach(doc => {
+    const docData = doc.data();
+    data.push({
+      latitude: docData.latitude || "",
+      longitude: docData.longitude || "",
+      paraugu_nr: docData.paraugu_nr || "",
+      pievien_datums: docData.pievien_datums || "",
+      pozitivs: docData.pozitivs !== undefined ? docData.pozitivs : "",
+      year: docData.year || "",
+      ID: doc.id
+    });
+  });
+
+  // Convert Data to CSV Format
+  const csvContent = [
+  //  te latviešu burtu nebūs
+  "latitude,longitude,paraugu_nr,pievien_datums,pozitivs,year,ID", // Headers
+    ...data.map(row => Object.values(row).join(",")) // Data rows
+  ].join("\n");
+
+  // Create Blob & Trigger Download
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Apsekojumi.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+// Function to Fetch Data from Buferzonas & Download CSV
+async function downloadCSVbz() {
+  const snapshot = await getDocs(collection(db, "Buferzonas"));
+  const data = [];
+
+  // Process Each Document
+  snapshot.forEach(doc => {
+    const docData = doc.data();
+    data.push({
+      centrelat: docData.centrelat || "",
+      centrelon: docData.centrelon || "",
+      Apraksts: docData.Apraksts || "",
+      ID: doc.id
+    });
+  });
+
+  // Convert Data to CSV Format
+  const csvContent = [
+    "\uFEFFcentrelat,centrelon,Apraksts,ID", // UTF-8 BOM (latviešu burtiem) + Headers 
+    ...data.map(row => Object.values(row).join(",")) // Data rows
+  ].join("\n");
+
+
+  // Create Blob & Trigger Download
+  const blob = new Blob([csvContent], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Buferzonas.csv";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+  
+  document.getElementById("csvButton").addEventListener("click", downloadCSV);
+  document.getElementById("csvBuffer").addEventListener("click", downloadCSVbz);
