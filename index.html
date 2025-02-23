@@ -14,16 +14,16 @@
         Novadi
       </label>
       <label>
-        <input type="checkbox" id="mazciemi-checkbox">
-        Mazciemi
-      </label>
-      <label>
         <input type="checkbox" id="buferzonas-checkbox" checked>
         Buferzonas
       </label>
       <label>
-        <input type="checkbox" id="apsekojumi-checkbox" checked>
-        Apsekojumi
+        <input type="checkbox" id="bzapsekojumi-checkbox" checked>
+        BZ Apsekojumi
+      </label>
+      <label>
+        <input type="checkbox" id="apsekojumi-checkbox">
+        Citi apsekojumi
       </label>
       <h2>Pievienot punktu</h2>
       <div class="input-group">
@@ -37,6 +37,13 @@
       <div class="input-group">
         <label for="year">Gads</label>
         <input type="text" id="year" placeholder="2025">
+      </div>
+      <div class="input-group">
+        <label for="mySelect">Veids:</label>
+        <select id="mySelect">
+            <option value="bz">Buferz. aps.</option>
+            <option value="cits">cits</option>
+        </select>
       </div>
       <label>
         <input type="checkbox" id="sampleCheckbox"> Paraugs

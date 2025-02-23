@@ -19,7 +19,7 @@ import Collection from 'ol/Collection.js';
 import { initializeApp } from 'firebase/app';
 import { getFirestore, doc, collection, addDoc, getDocs, setDoc, deleteDoc } from 'firebase/firestore/lite';
 import { novadiFillObj, novadiStrokeObj, largeFont } from './utils/consts.js'
-import { mazciemiFillObj, mazciemiStrokeObj, smallFont, pointFillObj0, pointFillObj2, pointStrokeObj, oldPointFill } from './utils/consts.js'
+import { pointFillObj0, pointFillObj2, pointStrokeObj, oldPointFill } from './utils/consts.js'
 import { circleFillObj, circleStrokeObj, centerFillObj, centerStrokeObj } from './utils/consts.js'
 
 // Your web app's Firebase configuration
@@ -43,7 +43,6 @@ const baseLayer =  new TileLayer({
   source: new OSM()
 })
 
-
 // Vector source and layer for Buferzona
 const buferzonaVectorSource = new VectorSource();
 const buferzonaVectorLayer = new VectorLayer({
@@ -57,10 +56,16 @@ const apsekojumiVectorLayer = new VectorLayer({
 });
 
 
+const bzApsekojumiVectorSource = new VectorSource();
+const bzApsekojumiVectorLayer = new VectorLayer({
+  source: bzApsekojumiVectorSource,
+});
+
+
 // map
 const map = new Map({
   target: 'map',
-  layers: [baseLayer, buferzonaVectorLayer, apsekojumiVectorLayer],
+  layers: [baseLayer, apsekojumiVectorLayer, bzApsekojumiVectorLayer, buferzonaVectorLayer],
   view: new View({
     //center: [0, 0],
     center: rigaWebMercator,
@@ -70,7 +75,6 @@ const map = new Map({
 
 // Kartes slāņi novadiem, adresēm.
 let novadiVectorLayer = null;
-let mazciemiVectorLayer = null;
 
 // GeoJSON vector sources
 const novadiGeojsonSource = new VectorSource({
@@ -78,12 +82,6 @@ const novadiGeojsonSource = new VectorSource({
     format: new GeoJSON()
   }) 
   
-//mazciemi
-const mazciemiGeojsonSource = new VectorSource({
-  url: '/adreses/mazciemi.geojson', // Provide the URL to your GeoJSON
-  format: new GeoJSON()
-})
-
 // Stili novadu, ēku un mazciemu lāņiem
 const novadiGeojsonStyle = new Style({
   fill: new Fill(novadiFillObj),
@@ -95,33 +93,12 @@ const novadiGeojsonStyle = new Style({
   })
 });
 
-//mazciemi
-const mazciemiPointVisibleStyle = new Style({
-  image: new CircleStyle({
-    radius: 6,
-    fill: new Fill(mazciemiFillObj),
-    stroke: new Stroke(mazciemiStrokeObj)
-  })
-});
-
-const mazciemiLabeltVisibleStyle = new Style({
-  image: new CircleStyle({
-    radius: 6,
-    fill: new Fill(mazciemiFillObj),
-    stroke: new Stroke(mazciemiStrokeObj)
-  }),
-  text: new Text({
-    font: smallFont,
-    fill: new Fill({ color: 'black'}),
-    text: ''
-  })
-});
   
 //Layer visibility
 const novadiCheckbox = document.getElementById('novadi-checkbox');
 const buferzonasCheckbox = document.getElementById('buferzonas-checkbox');
 const apsekojumiCheckbox = document.getElementById('apsekojumi-checkbox');
-const mazciemiCheckbox = document.getElementById('mazciemi-checkbox');
+const bsApsekojumiCheckbox = document.getElementById('bzapsekojumi-checkbox');
 
 // Toggle layer visibility checking checkbox
 novadiCheckbox.addEventListener('change', function(){
@@ -145,42 +122,13 @@ novadiCheckbox.addEventListener('change', function(){
   }
 });
 
-mazciemiCheckbox.addEventListener('change', function(){
-  if (this.checked) {
-    if (! mazciemiVectorLayer){
-      mazciemiVectorLayer = new VectorLayer({
-        source: mazciemiGeojsonSource,
-        style: function (feature, resolution) {
-          // Set zoom thresholds: adjust the resolution for your needs
-          const maxLabelResolution = 70; // Labels visible when zoomed in (lower resolution = closer zoom)
-          const maxPointResolution = 200; // Points visible until this resolution
-          
-          // Determine which style to apply based on resolution
-          if (resolution > maxPointResolution) {
-            // Too far out: no points or labels
-            return null;
-          } else if (resolution > maxLabelResolution) {
-            // Zoomed in enough for points, but not for labels
-            return mazciemiPointVisibleStyle;
-          } else {
-            // Zoomed in enough for both points and labels
-            mazciemiLabeltVisibleStyle.getText().setText(feature.get('NOSAUKUMS') || ''); // Replace 'name' with your GeoJSON's property 
-            return mazciemiLabeltVisibleStyle;
-          }
-        },
-      });
-      map.addLayer(mazciemiVectorLayer);
-    }
-    mazciemiVectorLayer.setVisible(true);
-  } else {
-    if (mazciemiVectorLayer){
-      mazciemiVectorLayer.setVisible(false);
-    }
-  }
-});
-
 apsekojumiCheckbox.addEventListener('change', function(){
   apsekojumiVectorLayer.setVisible(this.checked);
+});
+
+apsekojumiVectorLayer.setVisible(false)
+bsApsekojumiCheckbox.addEventListener('change', function(){
+  bzApsekojumiVectorLayer.setVisible(this.checked);
 });
 
 buferzonasCheckbox.addEventListener('change', function(){
@@ -237,7 +185,7 @@ function createMovableCircle(longitude, latitude, apraksts, firestoreId) {
     // Style for the center point
     const centerStyle = new Style({
       image: new CircleStyle({
-        radius: 4,
+        radius: 6,
         fill: new Fill(centerFillObj),
         stroke: new Stroke(centerStrokeObj)
       })
@@ -315,7 +263,14 @@ function createPointApsek(pointobj){
     })
   });
   apsekpointFeature.setStyle(pointStyle);
-  apsekojumiVectorSource.addFeature(apsekpointFeature);
+
+  // add point to BZ apsek point layer or another
+  if (pointobj.vieta && pointobj.vieta == 'cits'){
+    apsekojumiVectorSource.addFeature(apsekpointFeature);
+  } else {
+    bzApsekojumiVectorSource.addFeature(apsekpointFeature);
+  }
+  
 }
 
  // Load Apsekojumi Features from Firestore
@@ -340,8 +295,10 @@ function createPointApsek(pointobj){
           longitude: data.longitude,
           latitude: data.latitude,
           year: data.year,
+          vieta: data.vieta,
           id: doc.id
         };
+
         if(data.paraugu_nr){
           obj.paraugu_nr = data.paraugu_nr;
           if (data.pozitivs){
@@ -404,12 +361,15 @@ async function addSurveySite() {
   const lat = parseFloat(document.getElementById('latitude').value);
   const year = parseInt(document.getElementById('year').value);
   const paraugs = document.getElementById("sampleNumber").value.trim();
+  const selectElement = document.getElementById("mySelect");
+  const vieta = selectElement.value;
 
-  if (!lon || !lat || !year) return alert("Garums, platums un gads obligāti!");
+  if (!lon || !lat || !year || isNaN(lon) || isNaN(lat) || isNaN(year)) return alert("Garums, platums un gads obligāti, ar cipariem!");
   const obj = {}
   obj.longitude = lon;
   obj.latitude = lat;
   obj.year = year;
+  obj.vieta = vieta;
   obj.pievien_datums = Date.now()
   if (paraugs !== ""){
      obj.paraugu_nr = paraugs;
@@ -567,6 +527,7 @@ deleteBtn.addEventListener("click", async function(event) {
 
   if (confirm("Are you sure you want to delete this feature?")) {
     apsekojumiVectorSource.removeFeature(selectedFeature); // Remove from map
+    bzApsekojumiVectorSource.removeFeature(selectedFeature);
     if (featureId) {
       //console.log(featureId)
       try {
@@ -599,6 +560,7 @@ async function downloadCSV() {
       pievien_datums: docData.pievien_datums || "",
       pozitivs: docData.pozitivs !== undefined ? docData.pozitivs : "",
       year: docData.year || "",
+      vieta: docData.vieta || "",
       ID: doc.id
     });
   });
@@ -606,7 +568,7 @@ async function downloadCSV() {
   // Convert Data to CSV Format
   const csvContent = [
   //  te latviešu burtu nebūs
-  "latitude,longitude,paraugu_nr,pievien_datums,pozitivs,year,ID", // Headers
+  "latitude,longitude,paraugu_nr,pievien_datums,pozitivs,year,vieta,ID", // Headers
     ...data.map(row => Object.values(row).join(",")) // Data rows
   ].join("\n");
 
