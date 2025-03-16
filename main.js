@@ -65,7 +65,7 @@ const bzApsekojumiVectorLayer = new VectorLayer({
 // map
 const map = new Map({
   target: 'map',
-  layers: [baseLayer, apsekojumiVectorLayer, bzApsekojumiVectorLayer, buferzonaVectorLayer],
+  layers: [baseLayer, buferzonaVectorLayer, apsekojumiVectorLayer, bzApsekojumiVectorLayer],
   view: new View({
     //center: [0, 0],
     center: rigaWebMercator,
@@ -175,6 +175,9 @@ function createMovableCircle(longitude, latitude, apraksts, firestoreId) {
 
     // Attach Firestore document ID to features
     centerFeature.setId(firestoreId);
+
+    // Store reference: link circle to its center
+    circleFeature.set('centerFeature', centerFeature);
 
     // Style for the circle
     const circleStyle = new Style({
@@ -501,8 +504,19 @@ map.on('singleclick', function (event) {
       deleteBtn.style.display = 'inline-block'; // Show delete button
       overlay.setPosition(event.coordinate);
       popup.style.display = 'block';
-      popupLocked = true; // Lock popup in place
-    
+      popupLocked = true; // Lock popup in place\
+  }
+  else if (feature && feature.get('Apraksts')) {
+    selectedFeature = feature;
+    // If clicked feature is a circle, get its associated center
+    if (feature.getGeometry() instanceof Circle) {
+      selectedFeature = feature.get('centerFeature'); // Get linked center
+    }
+      popupContent.innerHTML = feature.get('Apraksts') + "; ID:" + selectedFeature.getId();
+      overlay.setPosition(event.coordinate);
+      popup.style.display = 'block';
+      deleteBtn.style.display = 'inline-block'; // Show delete button
+      popupLocked = true; // Lock popup in place    
   } else {
       // Click on empty space hides popup
       popup.style.display = 'none';
@@ -514,7 +528,7 @@ map.on('singleclick', function (event) {
 // Set the delete button action
 deleteBtn.addEventListener("click", async function(event) {
   event.stopPropagation(); // Prevent map click event from firing
-  console.log("Delete button clicked"); // Debugging
+  console.log("Delete button clicked");
   if (!selectedFeature) {
         console.warn("No feature selected for deletion.");
         return;
@@ -526,18 +540,36 @@ deleteBtn.addEventListener("click", async function(event) {
   }
 
   if (confirm("Are you sure you want to delete this feature?")) {
-    apsekojumiVectorSource.removeFeature(selectedFeature); // Remove from map
-    bzApsekojumiVectorSource.removeFeature(selectedFeature);
     if (featureId) {
-      //console.log(featureId)
-      try {
+      console.log(featureId)
+      if (selectedFeature.get('year')){
+        apsekojumiVectorSource.removeFeature(selectedFeature); // Remove from map
+        bzApsekojumiVectorSource.removeFeature(selectedFeature);
+        try {
           await deleteDoc(doc(db, "Apsekojumi", featureId)); // Remove from Firestore
           console.log("Deleted feature with ID:", featureId);
-      } catch (error) {
+        } catch (error) {
           console.error("Error deleting feature:", error);
+        }
+      } else {
+ 
+        try {
+          await deleteDoc(doc(db, "Buferzonas", featureId)); // Remove from Firestore
+          console.log("Deleted feature with ID:", featureId);
+        } catch (error) {
+          console.error("Error deleting feature:", error);
+        }
+        // Remove both center and associated circle from the map
+        const vectorSource = buferzonaVectorSource;
+        const centerFeature = selectedFeature;
+        const circleFeature = vectorSource.getFeatures().find(f => f.get('centerFeature') === centerFeature);
+
+        if (circleFeature){
+          vectorSource.removeFeature(circleFeature);
+        }
+        vectorSource.removeFeature(centerFeature);
       }
     }
-
     popup.style.display = 'none'; // Hide popup after deletion
     popupLocked = false; // Unlock popup
     deleteBtn.style.display = 'none';
