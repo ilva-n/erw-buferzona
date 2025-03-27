@@ -11,7 +11,7 @@ import CircleStyle from 'ol/style/Circle';
 import Stroke from 'ol/style/Stroke';
 import Fill from 'ol/style/Fill';
 import Text from 'ol/style/Text';
-import { Circle, Point } from 'ol/geom';
+import { Circle, Point, Polygon } from 'ol/geom';
 import Feature from 'ol/Feature.js';
 import Translate from 'ol/interaction/Translate.js'
 import Overlay from 'ol/Overlay.js'
@@ -21,6 +21,8 @@ import { getFirestore, doc, collection, addDoc, getDocs, setDoc, deleteDoc } fro
 import { novadiFillObj, novadiStrokeObj, largeFont } from './utils/consts.js'
 import { pointFillObj0, pointFillObj2, pointStrokeObj, oldPointFill } from './utils/consts.js'
 import { circleFillObj, circleStrokeObj, centerFillObj, centerStrokeObj } from './utils/consts.js'
+import { fromCircle } from 'ol/geom/Polygon';
+import {getPointResolution} from 'ol/proj';
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -46,19 +48,19 @@ const baseLayer =  new TileLayer({
 // Vector source and layer for Buferzona
 const buferzonaVectorSource = new VectorSource();
 const buferzonaVectorLayer = new VectorLayer({
-  source: buferzonaVectorSource,
+  source: buferzonaVectorSource
 });
 
 // Vector Layer and Source for Points
 const apsekojumiVectorSource = new VectorSource();
 const apsekojumiVectorLayer = new VectorLayer({
-  source: apsekojumiVectorSource,
+  source: apsekojumiVectorSource
 });
 
 
 const bzApsekojumiVectorSource = new VectorSource();
 const bzApsekojumiVectorLayer = new VectorLayer({
-  source: bzApsekojumiVectorSource,
+  source: bzApsekojumiVectorSource
 });
 
 
@@ -163,9 +165,31 @@ function createMovableCircle(longitude, latitude, apraksts, firestoreId) {
     const radiusInMeters = 3000; // 3 km
     //const initialCenter = [2774380, 8438290]; // Replace with your initial coordinates (EPSG:3857)
     const initialCenter = fromLonLat([longitude, latitude]);
+
+  /*
+  "As a first step, you could look at the distortions of the Mercator projection, which is a conformal projection. 
+  Distance with this projection is only correct along the equator, then the error increase with the latitude. 
+  Indeed, as you can see on a global view, the parallels keep the same legnth on the maps. 
+  For example, the horizontal scale factor, which is 1 at the equator, 
+  is equal to 1.15 at a latitude of 30° (15% error), 2 at a latitude of 60° 
+  and 11.5 at a latitude of 85° (scale factor 1/cos(latitude))"
+  "Divide the actual meters by the cosine of the latitude of the center and draw the circle with those fake meters."
+  */
+
+    // Convert latitude to radians for cosine function
+    const latRadians = (latitude * Math.PI) / 180;
+    const scaleCorrection = Math.cos(latRadians);
+
+    // Corrected radius calculation using latitude adjustment
+    const radiusInMapUnits = radiusInMeters / scaleCorrection;
+ 
+    // console.log("Latitude:", latitude);
+    // console.log("Scale Correction (cos(lat)):", scaleCorrection);
+    // console.log("Corrected Radius in Map Units:", radiusInMapUnits);
+
     // Create a circle feature and a center marker feature
     const circleFeature = new Feature({
-      geometry: new Circle(initialCenter, radiusInMeters),
+      geometry: new Circle(initialCenter, radiusInMapUnits),
       Apraksts: apraksts
     });
 
